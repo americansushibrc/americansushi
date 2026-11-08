@@ -1255,9 +1255,9 @@ img {
         <span>📷</span>
       </a>
       <!-- Carrito -->
-      <button class="header-cart-btn" id="headerCartBtn" aria-label="Abrir Carrito">
+      <button class="header-cart-btn" id="headerCartBtn" onclick="window.openCart()" aria-label="Abrir Carrito" type="button">
         <span>🛒 Pedido</span>
-        <span class="header-cart-badge">0</span>
+        <span class="header-cart-badge" id="headerCartBadge">0</span>
       </button>
     </div>
   </header>
@@ -1663,14 +1663,14 @@ img {
   <!-- ===================================================================
        SLIDE-OVER CART / WHATSAPP ORDER BUILDER
        =================================================================== -->
-  <div class="cart-overlay" id="cartOverlay"></div>
-  <aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-overlay" id="cartOverlay" onclick="window.closeCart()"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Carrito de compras">
     <div class="cart-drawer-header">
       <h3>
         <span>🍣</span>
         <span>Tu Pedido</span>
       </h3>
-      <button class="cart-close-x" id="cartCloseBtn">✕</button>
+      <button class="cart-close-x" id="cartCloseBtn" onclick="window.closeCart()" type="button" aria-label="Cerrar Carrito">✕</button>
     </div>
 
     <!-- CUADRO DE OPCIONES (RETIRO / ENVÍO) ARRIBA -->
@@ -1767,18 +1767,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ===================================================================
   // 2. ELEMENTOS DOM (CARRITO DE PEDIDOS)
   // ===================================================================
-  const cartBtn = document.getElementById('cartBtn');
   const cartDrawer = document.getElementById('cartDrawer');
   const cartOverlay = document.getElementById('cartOverlay');
   const cartCloseBtn = document.getElementById('cartCloseBtn');
-  const cartBadges = document.querySelectorAll('#cartBadge, #headerCartBadge');
   const cartItemsBox = document.getElementById('cartItemsBox');
   const cartTotalAmount = document.getElementById('cartTotalAmount');
   const sendWhatsAppBtn = document.getElementById('sendWhatsAppBtn');
   const cartTypeBtns = document.querySelectorAll('.cart-type-btn');
-  const cartNameField = document.getElementById('cartClientName');
-  const cartAddressField = document.getElementById('cartClientAddress');
-  const cartNotesField = document.getElementById('cartClientNotes');
+  const cartNameField = document.getElementById('cartNameField') || document.getElementById('cartClientName');
+  const cartAddressField = document.getElementById('cartAddressField') || document.getElementById('cartClientAddress');
+  const cartNotesField = document.getElementById('cartNotesField') || document.getElementById('cartClientNotes');
 
   // ===================================================================
   // 3. FUNCIONALIDAD DEL CARRITO & PEDIDOS WHATSAPP
@@ -1813,7 +1811,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
-    cartBadges.forEach(badge => {
+    document.querySelectorAll('#cartBadge, #headerCartBadge, .header-cart-badge').forEach(badge => {
       badge.textContent = totalCount;
     });
 
@@ -1849,22 +1847,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openCart() {
-    if (cartDrawer && cartOverlay) {
-      cartDrawer.classList.add('active');
-      cartOverlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
+    const drawer = document.getElementById('cartDrawer') || cartDrawer;
+    const overlay = document.getElementById('cartOverlay') || cartOverlay;
+    if (drawer) drawer.classList.add('active');
+    if (overlay) overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
   }
+  window.openCart = openCart;
 
   function closeCart() {
-    if (cartDrawer && cartOverlay) {
-      cartDrawer.classList.remove('active');
-      cartOverlay.classList.remove('active');
-      document.body.style.overflow = '';
-    }
+    const drawer = document.getElementById('cartDrawer') || cartDrawer;
+    const overlay = document.getElementById('cartOverlay') || cartOverlay;
+    if (drawer) drawer.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
   }
+  window.closeCart = closeCart;
 
-  if (cartBtn) cartBtn.addEventListener('click', openCart);
+  // Listeners para abrir / cerrar carrito en Desktop y Móvil
+  document.querySelectorAll('#cartBtn, #headerCartBtn, .header-cart-btn').forEach(btn => {
+    if (btn.tagName === 'BUTTON' || !btn.getAttribute('href')) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCart();
+      });
+    }
+  });
   if (cartCloseBtn) cartCloseBtn.addEventListener('click', closeCart);
   if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
 
